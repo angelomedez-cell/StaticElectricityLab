@@ -20,13 +20,16 @@
 
   <style>
     /* Global Styles */
+    html, body {
+      height: 100%;
+      overflow: hidden; /* Prevent scrolling for immersive feel */
+    }
     body { 
       font-family: 'Comic Neue', 'Comic Sans MS', sans-serif; 
       background-color: #f0f9ff; 
-      margin: 0;
-      overflow-x: hidden;
       touch-action: pan-y;
     }
+    #root { height: 100%; display: flex; flex-direction: column; }
     .sim-container { touch-action: none; }
     
     @keyframes float {
@@ -304,8 +307,6 @@
         window.speechSynthesis.cancel();
         
         // --- SPEECH CLEANING LOGIC ---
-        // remove (0), remove /, remove markdown
-        // ALSO remove "1. ", "2. " bullets at start of lines for smoother reading
         const spokenText = message
             .replace(/^\d+\.\s*/gm, '') // Remove list bullets "1. "
             .replace(/\(0\)/g, '') 
@@ -327,19 +328,19 @@
       }, [message, speak]);
 
       return (
-        <div className="flex items-start gap-4 mb-6 w-full max-w-4xl animate-fadeIn z-50 relative">
+        <div className="flex flex-col items-center flex-shrink-0 max-w-[200px] md:max-w-xs animate-fadeIn z-50 relative">
           <div className="flex-shrink-0 flex flex-col items-center">
-            <div className="text-8xl relative floating">
+            <div className="text-6xl md:text-8xl relative floating">
               <span role="img" aria-label="Sparkle" className="inline-block origin-bottom" style={{ filter: emotion === 'shocked' ? 'invert(1)' : 'none' }}>
                 {emotion === 'shocked' ? '😲' : '👩'}
               </span>
-              <div className="absolute -top-2 -right-4 text-5xl text-yellow-600 font-bold z-20 drop-shadow-md">⚡</div>
+              <div className="absolute -top-2 -right-4 text-4xl md:text-5xl text-yellow-600 font-bold z-20 drop-shadow-md">⚡</div>
               {isSpeaking && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-1 bg-yellow-400/50 blur-sm animate-pulse"></div>}
             </div>
             <div className="font-bold text-purple-800 mt-2 bg-purple-200 px-3 py-0.5 rounded-full text-sm border border-purple-400 shadow-sm">Sparkle</div>
           </div>
-          <div className="bg-white border-l-8 border-yellow-300 p-5 rounded-r-xl rounded-bl-xl shadow-md flex-grow relative speech-bubble mt-4 transition-all">
-            <div className="text-gray-800 font-medium leading-relaxed text-lg whitespace-pre-line">{message}</div>
+          <div className="bg-white border-l-8 border-yellow-300 p-4 rounded-r-xl rounded-bl-xl shadow-md w-full mt-4 transition-all">
+            <div className="text-gray-800 font-medium leading-relaxed text-sm md:text-base whitespace-pre-line">{message}</div>
           </div>
         </div>
       );
@@ -351,10 +352,12 @@
         const spokenWelcome = "Welcome LaSallian Scientists! I'm Sparkle. Check out our checklist of experiments below!";
         
         return (
-            <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-4 animate-fadeIn">
-                <Sparkle message={spokenWelcome} speak={settings.speak} />
+            <div className="flex flex-col md:flex-row h-full items-center justify-center w-full max-w-6xl mx-auto p-4 gap-8">
+                <div className="flex-1 flex justify-center md:justify-end">
+                    <Sparkle message={spokenWelcome} speak={settings.speak} />
+                </div>
                 
-                <div className="bg-white/80 p-6 rounded-xl shadow-lg border-2 border-purple-200 max-w-lg w-full mt-4">
+                <div className="flex-1 bg-white/80 p-6 rounded-xl shadow-lg border-2 border-purple-200 max-w-lg w-full">
                     <h2 className="text-2xl font-bold text-purple-800 mb-4 font-comic text-center">Lab Checklist 📋</h2>
                     <ul className="text-left text-gray-700 font-medium space-y-2 mb-6 ml-4">
                         <li>1. Build an Atom ⚛️</li>
@@ -365,10 +368,10 @@
                         <li>6. Real Life Examples 🌩️</li>
                     </ul>
                     <div className="text-center">
-                        <Button onClick={onComplete} className="text-2xl px-10 py-4 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition-all shadow-xl">
+                        <Button onClick={onComplete} className="text-xl md:text-2xl px-8 md:px-10 py-3 md:py-4 bg-green-500 hover:bg-green-600 transform hover:scale-105 transition-all shadow-xl">
                             Enter the Lab 🚀
                         </Button>
-                        <p className="text-gray-500 text-sm mt-4 italic">Clicking start enables the lab equipment sound system.</p>
+                        <p className="text-gray-500 text-xs md:text-sm mt-4 italic">Clicking start enables the lab equipment sound system.</p>
                     </div>
                 </div>
             </div>
@@ -384,59 +387,62 @@
       
       const getPos = (index) => {
         const angle = index * 2.39996; 
-        // 16 is tight but readable for w-6/w-5 circles
         const r = 16 * Math.sqrt(index); 
         return { x: r * Math.cos(angle), y: r * Math.sin(angle) };
       };
 
       return (
-        <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-4 animate-fadeIn">
-          <h2 className="text-2xl font-bold mb-4 text-purple-600">Mission 1: Inside the Atom</h2>
-          <Sparkle message={isComplete ? "Perfect! That's a stable Lithium atom." : "Let's build a Lithium atom! I need 3 Protons (+), 4 Neutrons (0), and 3 Electrons (-)."} emotion={isComplete ? 'excited' : 'happy'} speak={settings.speak} />
-
-          <div className="relative w-80 h-80 md:w-96 md:h-96 bg-gray-900 rounded-full flex items-center justify-center mb-6 overflow-hidden ring-4 ring-gray-200 shadow-xl">
-            <div className="absolute w-64 h-64 border-2 border-dashed border-gray-600 rounded-full animate-spin-slow" style={{animationDuration: '10s'}}></div>
-            <div className="absolute w-48 h-48 border-2 border-dashed border-gray-600 rounded-full animate-spin-slow" style={{animationDuration: '5s'}}></div>
-            
-            <div className="absolute w-24 h-24 flex items-center justify-center z-10 transition-all duration-300">
-              {Array.from({ length: protons }).map((_, i) => {
-                const pos = getPos(i);
-                return <ChargeCircle key={`p-${i}`} type="pos" className="absolute" style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }} />;
-              })}
-              {Array.from({ length: neutrons }).map((_, i) => {
-                const pos = getPos(protons + i);
-                return <div key={`n-${i}`} className="absolute w-6 h-6 bg-gray-400 rounded-full border border-gray-300" style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}></div>;
-              })}
-            </div>
-
-            {Array.from({ length: electrons }).map((_, i) => {
-              const angle = (i / electrons) * 2 * Math.PI;
-              const radius = 100 + (i % 2) * 30;
-              const x = Math.cos(angle) * radius;
-              const y = Math.sin(angle) * radius;
-              // High z-index to ensure visibility
-              return <ChargeCircle key={`e-${i}`} type="neg" className="absolute shadow-glow z-20" style={{ transform: `translate(${x}px, ${y}px)` }} />;
-            })}
+        <div className="flex flex-col md:flex-row items-center justify-center w-full h-full max-w-7xl mx-auto p-2 gap-4">
+          {/* Left Panel: Instructions & Sparkle */}
+          <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left space-y-4 max-w-sm">
+             <h2 className="text-2xl font-bold text-purple-600">Mission 1: Inside the Atom</h2>
+             <Sparkle message={isComplete ? "Perfect! That's a stable Lithium atom." : "Let's build a Lithium atom! I need 3 Protons (+), 4 Neutrons (0), and 3 Electrons (-)."} emotion={isComplete ? 'excited' : 'happy'} speak={settings.speak} />
+             {isComplete && (
+               <div className="animate-bounce mt-4">
+                 <Button onClick={onComplete} className="bg-green-500 hover:bg-green-600 text-xl px-8 py-3">Next Lab &rarr;</Button>
+               </div>
+             )}
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            {[{l:'Protons (+)', c:protons, s:setProtons, col:'red'}, {l:'Neutrons (0)', c:neutrons, s:setNeutrons, col:'gray'}, {l:'Electrons (-)', c:electrons, s:setElectrons, col:'yellow'}].map((item, idx) => (
-              <div key={idx} className="flex flex-col items-center">
-                <span className={`font-bold text-${item.col}-600 mb-1`}>{item.l}</span>
-                <div className="flex gap-2 items-center">
-                  <Button onClick={() => item.s(Math.max(0, item.c - 1))} className={`px-2 py-1 bg-${item.col}-200 text-black hover:bg-${item.col}-300`}>-</Button>
-                  <span className="text-xl font-mono w-6 text-center">{item.c}</span>
-                  <Button onClick={() => item.s(item.c + 1)} className={`px-2 py-1 bg-${item.col}-500 hover:bg-${item.col}-600`}>+</Button>
+          {/* Right Panel: Interactive Sim */}
+          <div className="flex-1 flex flex-col items-center justify-center w-full">
+              <div className="relative w-72 h-72 md:w-96 md:h-96 bg-gray-900 rounded-full flex items-center justify-center mb-6 overflow-hidden ring-4 ring-gray-200 shadow-xl">
+                <div className="absolute w-56 h-56 md:w-64 md:h-64 border-2 border-dashed border-gray-600 rounded-full animate-spin-slow" style={{animationDuration: '10s'}}></div>
+                <div className="absolute w-40 h-40 md:w-48 md:h-48 border-2 border-dashed border-gray-600 rounded-full animate-spin-slow" style={{animationDuration: '5s'}}></div>
+                
+                <div className="absolute w-24 h-24 flex items-center justify-center z-10 transition-all duration-300">
+                  {Array.from({ length: protons }).map((_, i) => {
+                    const pos = getPos(i);
+                    return <ChargeCircle key={`p-${i}`} type="pos" className="absolute" style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }} />;
+                  })}
+                  {Array.from({ length: neutrons }).map((_, i) => {
+                    const pos = getPos(protons + i);
+                    return <div key={`n-${i}`} className="absolute w-6 h-6 bg-gray-400 rounded-full border border-gray-300" style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}></div>;
+                  })}
                 </div>
-              </div>
-            ))}
-          </div>
 
-          {isComplete && (
-            <div className="mt-6 animate-bounce">
-              <Button onClick={onComplete} className="bg-green-500 hover:bg-green-600 text-xl px-8 py-3">Next Lab &rarr;</Button>
-            </div>
-          )}
+                {Array.from({ length: electrons }).map((_, i) => {
+                  const angle = (i / electrons) * 2 * Math.PI;
+                  const radius = 100 + (i % 2) * 30;
+                  const x = Math.cos(angle) * radius;
+                  const y = Math.sin(angle) * radius;
+                  return <ChargeCircle key={`e-${i}`} type="neg" className="absolute shadow-glow z-20" style={{ transform: `translate(${x}px, ${y}px)` }} />;
+                })}
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                {[{l:'Protons (+)', c:protons, s:setProtons, col:'red'}, {l:'Neutrons (0)', c:neutrons, s:setNeutrons, col:'gray'}, {l:'Electrons (-)', c:electrons, s:setElectrons, col:'yellow'}].map((item, idx) => (
+                  <div key={idx} className="flex flex-col items-center bg-white p-2 rounded-lg shadow">
+                    <span className={`font-bold text-${item.col}-600 mb-1 text-sm`}>{item.l}</span>
+                    <div className="flex gap-2 items-center">
+                      <Button onClick={() => item.s(Math.max(0, item.c - 1))} className={`px-2 py-1 bg-${item.col}-200 text-black hover:bg-${item.col}-300`}>-</Button>
+                      <span className="text-xl font-mono w-6 text-center">{item.c}</span>
+                      <Button onClick={() => item.s(item.c + 1)} className={`px-2 py-1 bg-${item.col}-500 hover:bg-${item.col}-600`}>+</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+          </div>
         </div>
       );
     };
@@ -445,29 +451,31 @@
     const ElectronShellLevel = ({ onComplete, settings }) => {
       const [knocked, setKnocked] = useState(false);
       return (
-        <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-4 animate-fadeIn">
-          <h2 className="text-2xl font-bold mb-4 text-purple-600">Mission 2: Why do they move?</h2>
-          <Sparkle message={knocked ? "See that? The nucleus holds tight, but that outer electron is loose!" : "The Nucleus is protected deep inside. But look at the Outside Shell... tap that electron!"} emotion={knocked ? 'excited' : 'happy'} speak={settings.speak} />
-
-          <div className="relative w-full h-80 bg-gray-900 rounded-xl flex items-center justify-center overflow-hidden border-4 border-gray-700">
-            {!knocked && <GuideArrow text="Tap me!" className="top-1/3 right-1/3" direction="left" />}
-            <div className="relative w-64 h-64 flex items-center justify-center">
-              <div className="absolute w-32 h-32 bg-gray-800 rounded-full flex flex-col items-center justify-center z-10 border-4 border-gray-600 gap-2">
-                 <div className="flex gap-1"><ChargeCircle type="pos"/><ChargeCircle type="pos"/></div>
-                 <div className="text-[10px] text-gray-300 font-bold">Nucleus</div>
-              </div>
-              <div className="absolute inset-0 border-2 border-dashed border-gray-500 rounded-full"></div>
-              <div 
-                onClick={() => { setKnocked(true); if(settings.sound) playSound('zap'); }}
-                className={`absolute cursor-pointer transition-transform z-20 ${knocked ? 'flying-electron' : 'animate-bounce'}`}
-                style={{ top: '50%', right: '-1.5rem', marginTop: '-1.5rem', '--tx': '200px', '--ty': '-200px' }}
-              >
-                <ChargeCircle type="neg" size="lg" />
-              </div>
-            </div>
+        <div className="flex flex-col md:flex-row items-center justify-center w-full h-full max-w-7xl mx-auto p-2 gap-8">
+          <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left space-y-4 max-w-sm">
+             <h2 className="text-2xl font-bold text-purple-600">Mission 2: Why do they move?</h2>
+             <Sparkle message={knocked ? "See that? The nucleus holds tight, but that outer electron is loose!" : "The Nucleus is protected deep inside. But look at the Outside Shell... tap that electron!"} emotion={knocked ? 'excited' : 'happy'} speak={settings.speak} />
+             {knocked && <div className="mt-4"><Button onClick={onComplete} className="bg-green-500 hover:bg-green-600 text-xl px-8 py-3">Next &rarr;</Button></div>}
           </div>
-          <div className="mt-6 text-center">
-            {knocked && <Button onClick={onComplete} className="bg-green-500 hover:bg-green-600 text-xl px-8 py-3">Next &rarr;</Button>}
+
+          <div className="flex-1 flex justify-center w-full">
+              <div className="relative w-full max-w-md h-80 bg-gray-900 rounded-xl flex items-center justify-center overflow-hidden border-4 border-gray-700">
+                {!knocked && <GuideArrow text="Tap me!" className="top-1/3 right-1/3" direction="left" />}
+                <div className="relative w-64 h-64 flex items-center justify-center">
+                  <div className="absolute w-32 h-32 bg-gray-800 rounded-full flex flex-col items-center justify-center z-10 border-4 border-gray-600 gap-2">
+                     <div className="flex gap-1"><ChargeCircle type="pos"/><ChargeCircle type="pos"/></div>
+                     <div className="text-[10px] text-gray-300 font-bold">Nucleus</div>
+                  </div>
+                  <div className="absolute inset-0 border-2 border-dashed border-gray-500 rounded-full"></div>
+                  <div 
+                    onClick={() => { setKnocked(true); if(settings.sound) playSound('zap'); }}
+                    className={`absolute cursor-pointer transition-transform z-20 ${knocked ? 'flying-electron' : 'animate-bounce'}`}
+                    style={{ top: '50%', right: '-1.5rem', marginTop: '-1.5rem', '--tx': '200px', '--ty': '-200px' }}
+                  >
+                    <ChargeCircle type="neg" size="lg" />
+                  </div>
+                </div>
+              </div>
           </div>
         </div>
       );
@@ -495,35 +503,39 @@
         : "Set the charges and hit Test. Do opposites attract or repel?";
 
       return (
-        <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-4 animate-fadeIn">
-          <h2 className="text-2xl font-bold mb-4 text-purple-600">Mission 3: Attraction & Repulsion</h2>
-          <Sparkle message={msg} speak={settings.speak} />
-
-          <div className="relative w-full h-64 bg-gray-100 rounded-xl border-2 border-gray-300 flex items-center justify-center gap-20 overflow-hidden">
-            <div className={`transition-all duration-700 ${animating || tested ? (isAttract ? 'translate-x-[40px]' : '-translate-x-[60px]') : ''}`}>
-                <ChargeCircle type={chargeL} size="lg" className="w-20 h-20 text-4xl shadow-xl" />
-            </div>
-            <div className="flex flex-col items-center justify-center h-full w-20">
-              {tested && isAttract && <div className="text-4xl font-bold text-green-500 animate-pulse">→ ←</div>}
-              {tested && isRepel && <div className="text-4xl font-bold text-red-500 animate-pulse">← →</div>}
-            </div>
-            <div className={`transition-all duration-700 ${animating || tested ? (isAttract ? '-translate-x-[40px]' : 'translate-x-[60px]') : ''}`}>
-                <ChargeCircle type={chargeR} size="lg" className="w-20 h-20 text-4xl shadow-xl" />
-            </div>
+        <div className="flex flex-col md:flex-row items-center justify-center w-full h-full max-w-7xl mx-auto p-2 gap-8">
+          <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left space-y-4 max-w-sm">
+             <h2 className="text-2xl font-bold text-purple-600">Mission 3: Attraction & Repulsion</h2>
+             <Sparkle message={msg} speak={settings.speak} />
+             {tested && <div className="mt-4"><Button onClick={onComplete} className="bg-green-500 text-xl px-8 py-3">Next &rarr;</Button></div>}
           </div>
 
-          <div className="flex justify-between w-full max-w-md mt-6 gap-8">
-            <div className="flex gap-2">
-              <Button onClick={() => setChargeL('pos')} disabled={chargeL === 'pos'} className={chargeL === 'pos' ? 'ring-2 ring-red-500' : 'opacity-50'}>+</Button>
-              <Button onClick={() => setChargeL('neg')} disabled={chargeL === 'neg'} className={chargeL === 'neg' ? 'ring-2 ring-blue-500' : 'opacity-50'}>-</Button>
-            </div>
-            <Button onClick={handleTest} className="bg-purple-600 w-32">Test!</Button>
-            <div className="flex gap-2">
-              <Button onClick={() => setChargeR('pos')} disabled={chargeR === 'pos'} className={chargeR === 'pos' ? 'ring-2 ring-red-500' : 'opacity-50'}>+</Button>
-              <Button onClick={() => setChargeR('neg')} disabled={chargeR === 'neg'} className={chargeR === 'neg' ? 'ring-2 ring-blue-500' : 'opacity-50'}>-</Button>
-            </div>
+          <div className="flex-1 flex flex-col items-center w-full">
+              <div className="relative w-full max-w-lg h-64 bg-gray-100 rounded-xl border-2 border-gray-300 flex items-center justify-center gap-20 overflow-hidden mb-6">
+                <div className={`transition-all duration-700 ${animating || tested ? (isAttract ? 'translate-x-[40px]' : '-translate-x-[60px]') : ''}`}>
+                    <ChargeCircle type={chargeL} size="lg" className="w-20 h-20 text-4xl shadow-xl" />
+                </div>
+                <div className="flex flex-col items-center justify-center h-full w-20">
+                  {tested && isAttract && <div className="text-4xl font-bold text-green-500 animate-pulse">→ ←</div>}
+                  {tested && isRepel && <div className="text-4xl font-bold text-red-500 animate-pulse">← →</div>}
+                </div>
+                <div className={`transition-all duration-700 ${animating || tested ? (isAttract ? '-translate-x-[40px]' : 'translate-x-[60px]') : ''}`}>
+                    <ChargeCircle type={chargeR} size="lg" className="w-20 h-20 text-4xl shadow-xl" />
+                </div>
+              </div>
+
+              <div className="flex justify-between w-full max-w-md gap-8">
+                <div className="flex gap-2">
+                  <Button onClick={() => setChargeL('pos')} disabled={chargeL === 'pos'} className={chargeL === 'pos' ? 'ring-2 ring-red-500' : 'opacity-50'}>+</Button>
+                  <Button onClick={() => setChargeL('neg')} disabled={chargeL === 'neg'} className={chargeL === 'neg' ? 'ring-2 ring-blue-500' : 'opacity-50'}>-</Button>
+                </div>
+                <Button onClick={handleTest} className="bg-purple-600 w-32">Test!</Button>
+                <div className="flex gap-2">
+                  <Button onClick={() => setChargeR('pos')} disabled={chargeR === 'pos'} className={chargeR === 'pos' ? 'ring-2 ring-red-500' : 'opacity-50'}>+</Button>
+                  <Button onClick={() => setChargeR('neg')} disabled={chargeR === 'neg'} className={chargeR === 'neg' ? 'ring-2 ring-blue-500' : 'opacity-50'}>-</Button>
+                </div>
+              </div>
           </div>
-          <div className="mt-8 h-12">{tested && <Button onClick={onComplete} className="bg-green-500 text-xl px-8 py-3">Next &rarr;</Button>}</div>
         </div>
       )
     };
@@ -556,34 +568,38 @@
       };
 
       return (
-        <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-4 animate-fadeIn">
-          <h2 className="text-2xl font-bold mb-4 text-purple-600">Mission 4: Charging the Comb</h2>
-          <Sparkle message="Steal electrons! Rub the plastic comb on the hair. The friction knocks electrons off the hair and onto the comb." speak={settings.speak} />
-
-          <div className="relative w-full h-80 bg-pink-50 rounded-xl border-2 border-pink-200 overflow-hidden select-none touch-none cursor-none" onMouseMove={handleMove} onTouchMove={handleMove}>
-            {charge < 3 && <GuideArrow text="Rub here!" className="bottom-20 left-1/2 -translate-x-1/2" direction="down" />}
-            
-            {/* Hair */}
-            <div className="absolute bottom-[-15px] left-1/4 w-1/2 h-64 pointer-events-none">
-              {Array.from({length: 30}).map((_,i) => <div key={i} className="absolute bottom-0 w-1 bg-yellow-800 origin-bottom" style={{height: `${120 + Math.random()*80}%`, left: `${i*3.5}%`, transform: `rotate(${(i-15)*2.5}deg)`}}></div>)}
-              <div className="absolute bottom-0 w-full h-20 bg-yellow-900 rounded-t-full flex justify-center items-end pb-2"><span className="text-white opacity-50">HAIR</span></div>
-            </div>
-
-            {/* Comb */}
-            <div className="absolute w-64 h-24 bg-purple-600 rounded-lg transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center z-20 shadow-xl pointer-events-none" style={{ left: `${combPos.x}%`, top: `${combPos.y}%` }}>
-              <div className="w-full h-4 bg-purple-700 mt-auto flex justify-around">{Array.from({length:15}).map((_,i) => <div key={i} className="w-1 h-8 bg-purple-600"></div>)}</div>
-              <div className="absolute top-2 text-white font-bold opacity-80">COMB</div>
-              <div className="absolute top-0 right-0 flex flex-wrap w-full h-full p-2 gap-1 justify-center">
-                {Array.from({length: charge}).map((_, i) => <ChargeCircle key={i} type="neg" size="sm" animate={true} />)}
-              </div>
-            </div>
-
-            {flyingElectrons.map(e => (
-              <div key={e.id} className="absolute bottom-20 left-1/2 flying-electron" style={{ '--tx': '0px', '--ty': '-150px' }}><ChargeCircle type="neg" /></div>
-            ))}
+        <div className="flex flex-col md:flex-row items-center justify-center w-full h-full max-w-7xl mx-auto p-2 gap-8">
+          <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left space-y-4 max-w-sm">
+             <h2 className="text-2xl font-bold text-purple-600">Mission 4: Charging the Comb</h2>
+             <Sparkle message="Steal electrons! Rub the plastic comb on the hair. The friction knocks electrons off the hair and onto the comb." speak={settings.speak} />
+             <div className="mt-4"><p className="text-lg">Electrons Stolen: <span className="font-bold text-xl">{charge} / 12</span></p></div>
+             {charge >= 12 && <div className="mt-6 animate-bounce"><Button onClick={onComplete} className="bg-green-500 text-xl px-8 py-3">Next Lab &rarr;</Button></div>}
           </div>
-          <div className="mt-4 text-center"><p className="text-lg">Electrons Stolen: <span className="font-bold text-xl">{charge} / 12</span></p></div>
-          {charge >= 12 && <div className="mt-6 animate-bounce"><Button onClick={onComplete} className="bg-green-500 text-xl px-8 py-3">Next Lab &rarr;</Button></div>}
+
+          <div className="flex-1 w-full">
+              <div className="relative w-full h-80 bg-pink-50 rounded-xl border-2 border-pink-200 overflow-hidden select-none touch-none cursor-none" onMouseMove={handleMove} onTouchMove={handleMove}>
+                {charge < 3 && <GuideArrow text="Rub here!" className="bottom-20 left-1/2 -translate-x-1/2" direction="down" />}
+                
+                {/* Hair */}
+                <div className="absolute bottom-[-15px] left-1/4 w-1/2 h-64 pointer-events-none">
+                  {Array.from({length: 30}).map((_,i) => <div key={i} className="absolute bottom-0 w-1 bg-yellow-800 origin-bottom" style={{height: `${120 + Math.random()*80}%`, left: `${i*3.5}%`, transform: `rotate(${(i-15)*2.5}deg)`}}></div>)}
+                  <div className="absolute bottom-0 w-full h-20 bg-yellow-900 rounded-t-full flex justify-center items-end pb-2"><span className="text-white opacity-50">HAIR</span></div>
+                </div>
+
+                {/* Comb */}
+                <div className="absolute w-64 h-24 bg-purple-600 rounded-lg transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center z-20 shadow-xl pointer-events-none" style={{ left: `${combPos.x}%`, top: `${combPos.y}%` }}>
+                  <div className="w-full h-4 bg-purple-700 mt-auto flex justify-around">{Array.from({length:15}).map((_,i) => <div key={i} className="w-1 h-8 bg-purple-600"></div>)}</div>
+                  <div className="absolute top-2 text-white font-bold opacity-80">COMB</div>
+                  <div className="absolute top-0 right-0 flex flex-wrap w-full h-full p-2 gap-1 justify-center">
+                    {Array.from({length: charge}).map((_, i) => <ChargeCircle key={i} type="neg" size="sm" animate={true} />)}
+                  </div>
+                </div>
+
+                {flyingElectrons.map(e => (
+                  <div key={e.id} className="absolute bottom-20 left-1/2 flying-electron" style={{ '--tx': '0px', '--ty': '-150px' }}><ChargeCircle type="neg" /></div>
+                ))}
+              </div>
+          </div>
         </div>
       );
     };
@@ -625,7 +641,6 @@
           const dist = balloonPos.x - canX;
           if (charge > 5 && Math.abs(dist) < 35 && Math.abs(dist) > 5 && balloonPos.y > 50) {
             setCanX(prev => {
-              // Reduced speed from 0.8 to 0.1 for noticeably slower rolling
               const next = prev + (dist > 0 ? 0.1 : -0.1);
               if(settings.sound && Math.random()>0.9) playSound('roll'); 
               return Math.max(5, Math.min(95, next));
@@ -664,113 +679,113 @@
       };
 
       return (
-        <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-4 animate-fadeIn">
-          <div className="w-full flex flex-col md:flex-row gap-4 mb-4">
-            <div className="flex-1"><Sparkle message={getMsg()} speak={settings.speak} /></div>
-            {/* Microscope */}
+        <div className="flex flex-col md:flex-row items-center justify-center w-full h-full max-w-7xl mx-auto p-2 gap-4">
+          <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left space-y-4 max-w-sm">
+            <Sparkle message={getMsg()} speak={settings.speak} />
+            
+            {/* Microscope Panel - Moved to side panel area */}
             {['charge', 'paper', 'can'].includes(subStage) && (
-              <div className="w-full md:w-64 bg-blue-50 rounded-xl border-4 border-blue-200 p-3 shadow-inner h-64 md:h-auto">
-                <h4 className="font-bold text-blue-800 text-center mb-2 border-b border-blue-200">Microscope 🔬</h4>
-                <div className="bg-white rounded-lg border border-gray-300 h-48 flex flex-col overflow-hidden">
-                  <div className="h-1/2 bg-purple-500 flex flex-wrap gap-1 items-center justify-center p-2 relative">
-                    <span className="absolute top-0 left-1 text-white/50 text-[10px]">Balloon</span>
-                    {charge > 0 ? Array.from({length: Math.min(charge, 10)}).map((_,i)=><ChargeCircle key={i} type="neg" size="sm" />) : <span className="text-white/60 text-xs">Neutral</span>}
+              <div className="w-full bg-blue-50 rounded-xl border-4 border-blue-200 p-2 shadow-inner h-48 mt-2 hidden md:block">
+                <h4 className="font-bold text-blue-800 text-center mb-1 text-sm border-b border-blue-200">Microscope 🔬</h4>
+                <div className="bg-white rounded-lg border border-gray-300 h-32 flex flex-col overflow-hidden">
+                  <div className="h-1/2 bg-purple-500 flex flex-wrap gap-1 items-center justify-center p-1 relative">
+                    <span className="absolute top-0 left-1 text-white/50 text-[8px]">Balloon</span>
+                    {charge > 0 ? Array.from({length: Math.min(charge, 10)}).map((_,i)=><ChargeCircle key={i} type="neg" size="sm" style={{transform: 'scale(0.8)'}} />) : <span className="text-white/60 text-[10px]">Neutral</span>}
                   </div>
-                  <div className="h-1/2 bg-gray-100 flex flex-col items-center justify-center p-2 relative">
-                     <span className="absolute bottom-0 right-1 text-gray-400 text-[10px]">Target</span>
+                  <div className="h-1/2 bg-gray-100 flex flex-col items-center justify-center p-1 relative">
+                     <span className="absolute bottom-0 right-1 text-gray-400 text-[8px]">Target</span>
                      {subStage === 'charge' ? (
-                        <div className="flex gap-2">{Array.from({length: 5}).map((_,i)=><div key={i} className="flex flex-col items-center"><ChargeCircle type="pos" size="sm"/>{i<(15-charge) && <ChargeCircle type="neg" size="sm" className="-mt-3"/>}</div>)}</div>
+                        <div className="flex gap-1">{Array.from({length: 5}).map((_,i)=><div key={i} className="flex flex-col items-center"><ChargeCircle type="pos" size="sm" style={{transform: 'scale(0.8)'}}/>{i<(15-charge) && <ChargeCircle type="neg" size="sm" className="-mt-3" style={{transform: 'scale(0.8)'}}/>}</div>)}</div>
                      ) : (
                         <div className="flex flex-col gap-1 items-center">
-                           {charge > 5 && (subStage==='paper'?balloonPos.y>50:Math.abs(balloonPos.x-canX)<40) && <div className="flex gap-1 animate-bounce text-xs font-bold text-blue-500">Run Away! ↓</div>}
-                           <div className="flex gap-1">{Array.from({length: 5}).map((_,i)=><ChargeCircle key={i} type="pos" size="sm"/>)}</div>
+                           {charge > 5 && (subStage==='paper'?balloonPos.y>50:Math.abs(balloonPos.x-canX)<40) && <div className="flex gap-1 animate-bounce text-[10px] font-bold text-blue-500">Run Away! ↓</div>}
+                           <div className="flex gap-1">{Array.from({length: 5}).map((_,i)=><ChargeCircle key={i} type="pos" size="sm" style={{transform: 'scale(0.8)'}}/>)}</div>
                         </div>
                      )}
                   </div>
                 </div>
               </div>
             )}
+
+            <div className="flex flex-wrap gap-2 justify-center md:justify-start w-full">
+                {['charge','paper','can','wall'].map(s => (
+                    <button key={s} onClick={() => setSubStage(s)} disabled={s !== 'charge' && charge < 5} className={`px-3 py-1 rounded-lg font-bold capitalize text-sm whitespace-nowrap ${subStage===s?'bg-purple-600 text-white':'bg-white text-purple-600 border border-purple-200'} ${s!=='charge'&&charge<5?'opacity-50':''}`}>{s}</button>
+                ))}
+            </div>
+            
+            {subStage === 'wall' && isComplete && <Button onClick={onComplete} className="bg-green-500 text-lg px-6 py-2 mt-2">Mission Complete &rarr;</Button>}
           </div>
 
-          <div className="flex gap-2 mb-2 overflow-x-auto pb-2 w-full max-w-2xl">
-            {['charge','paper','can','wall'].map(s => (
-                <button key={s} onClick={() => setSubStage(s)} disabled={s !== 'charge' && charge < 5} className={`px-4 py-2 rounded-lg font-bold capitalize whitespace-nowrap ${subStage===s?'bg-purple-600 text-white':'bg-white text-purple-600 border border-purple-200'} ${s!=='charge'&&charge<5?'opacity-50':''}`}>{s}</button>
-            ))}
-          </div>
-
-          <div className="relative w-full h-80 bg-slate-200 rounded-xl border-4 border-slate-300 overflow-hidden select-none touch-none shadow-inner cursor-none" onMouseMove={handleInteraction} onTouchMove={handleInteraction}>
-             {subStage === 'charge' && (
-                 <div className="absolute bottom-0 right-0 w-72 h-48 bg-orange-700 rounded-tl-[60px] border-t-4 border-l-4 border-orange-800 shadow-2xl overflow-hidden">
-                     {/* Label for Sweater */}
-                     <div className="absolute bottom-2 right-4 bg-white/30 text-white font-bold px-2 py-1 rounded rotate-[-5deg] pointer-events-none text-sm border border-white/50 shadow-sm backdrop-blur-sm">Wool Sweater</div>
-                     <div className="absolute inset-0 flex flex-wrap content-center justify-center gap-4 p-6">
-                        {Array.from({length: 15}).map((_, i) => (
-                            <div key={i} className="relative w-8 h-8 flex items-center justify-center bg-orange-800/50 rounded-full">
-                                <ChargeCircle type="pos" size="md" className="absolute opacity-50" />
-                                {i < (15 - charge) && <ChargeCircle type="neg" size="md" className="absolute z-10 animate-pulse" />}
-                            </div>
-                        ))}
-                     </div>
-                 </div>
-             )}
-             {subStage === 'paper' && (
-                 <div className="absolute bottom-10 left-0 w-full flex justify-center h-20">
-                     {papers.map(p => (
-                         <div key={p.id} className="absolute bg-white w-6 h-8 shadow-sm border border-gray-300 flex flex-col items-center justify-center" 
-                              style={{ 
-                                left: `${p.initialX}%`, 
-                                bottom: p.lifted ? '10px' : '0px', 
-                                transform: `rotate(${p.lifted ? (Math.random() > 0.5 ? -15 : 15) : p.clumpOffset * 2}deg) scale(${p.lifted ? 1.1 : 1}) translateY(${p.lifted ? -15 : 0}px)`, 
-                                zIndex: p.lifted ? 50 : 1,
-                                transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' 
-                              }}>
-                            <ChargeCircle type="pos" size="sm" className="mb-[-4px]" />
-                            <ChargeCircle type="neg" size="sm" className={`transition-transform duration-300 ${p.lifted ? 'translate-y-4 opacity-50' : ''}`} />
+          <div className="flex-1 w-full flex flex-col">
+              <div className="relative w-full h-80 bg-slate-200 rounded-xl border-4 border-slate-300 overflow-hidden select-none touch-none shadow-inner cursor-none" onMouseMove={handleInteraction} onTouchMove={handleInteraction}>
+                 {subStage === 'charge' && (
+                     <div className="absolute bottom-0 right-0 w-72 h-48 bg-orange-700 rounded-tl-[60px] border-t-4 border-l-4 border-orange-800 shadow-2xl overflow-hidden">
+                         <div className="absolute bottom-2 right-4 bg-white/30 text-white font-bold px-2 py-1 rounded rotate-[-5deg] pointer-events-none text-sm border border-white/50 shadow-sm backdrop-blur-sm">Wool Sweater</div>
+                         <div className="absolute inset-0 flex flex-wrap content-center justify-center gap-4 p-6">
+                            {Array.from({length: 15}).map((_, i) => (
+                                <div key={i} className="relative w-8 h-8 flex items-center justify-center bg-orange-800/50 rounded-full">
+                                    <ChargeCircle type="pos" size="md" className="absolute opacity-50" />
+                                    {i < (15 - charge) && <ChargeCircle type="neg" size="md" className="absolute z-10 animate-pulse" />}
+                                </div>
+                            ))}
                          </div>
-                     ))}
-                     <div className="absolute bottom-[-10px] w-full h-4 bg-gray-400"></div>
-                 </div>
-             )}
-             {subStage === 'can' && (
-                 <div className="absolute bottom-8 w-20 h-28 bg-gradient-to-r from-gray-300 via-gray-100 to-gray-300 border-t-4 border-b-4 border-gray-400 rounded-sm shadow-xl flex flex-col items-center justify-center overflow-hidden transition-all duration-300 ease-out" 
-                      style={{ left: `${canX}%`, transform: 'translateX(-50%)' }}>
-                     <div className="w-full h-full absolute inset-0 flex flex-col justify-center gap-2 items-center">
-                        <div className="flex gap-1 opacity-60"><ChargeCircle type="pos" size="sm" /><ChargeCircle type="pos" size="sm" /></div>
-                        <div className={`flex gap-1 transition-transform duration-500 ${charge > 5 && Math.abs(balloonPos.x - canX) < 40 ? 'translate-x-8' : ''}`}><ChargeCircle type="neg" size="sm" /><ChargeCircle type="neg" size="sm" /></div>
                      </div>
-                 </div>
-             )}
-             {subStage === 'wall' && (
-                <div className="absolute top-0 left-0 w-32 h-full bg-amber-100 border-r-4 border-amber-200 flex flex-col items-center justify-center overflow-hidden">
-                    <div className="absolute inset-0 flex flex-col justify-around p-2">
-                        {Array.from({length: 8}).map((_, r) => (
-                            <div key={r} className="flex justify-around">
-                                {Array.from({length: 3}).map((_, c) => (
-                                    <div key={c} className="relative w-6 h-6 flex items-center justify-center">
-                                        <span className="text-red-500 font-bold text-xs absolute">+</span>
-                                        <span className={`text-blue-500 font-bold text-xs absolute transition-transform duration-500 ${charge > 5 && balloonPos.x < 30 ? 'translate-x-4 opacity-50' : ''}`}>-</span>
-                                    </div>
-                                ))}
-                            </div>
-                        ))}
+                 )}
+                 {subStage === 'paper' && (
+                     <div className="absolute bottom-10 left-0 w-full flex justify-center h-20">
+                         {papers.map(p => (
+                             <div key={p.id} className="absolute bg-white w-6 h-8 shadow-sm border border-gray-300 flex flex-col items-center justify-center" 
+                                  style={{ 
+                                    left: `${p.initialX}%`, 
+                                    bottom: p.lifted ? '10px' : '0px', 
+                                    transform: `rotate(${p.lifted ? (Math.random() > 0.5 ? -15 : 15) : p.clumpOffset * 2}deg) scale(${p.lifted ? 1.1 : 1}) translateY(${p.lifted ? -15 : 0}px)`, 
+                                    zIndex: p.lifted ? 50 : 1,
+                                    transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' 
+                                  }}>
+                                <ChargeCircle type="pos" size="sm" className="mb-[-4px]" />
+                                <ChargeCircle type="neg" size="sm" className={`transition-transform duration-300 ${p.lifted ? 'translate-y-4 opacity-50' : ''}`} />
+                             </div>
+                         ))}
+                         <div className="absolute bottom-[-10px] w-full h-4 bg-gray-400"></div>
+                     </div>
+                 )}
+                 {subStage === 'can' && (
+                     <div className="absolute bottom-8 w-20 h-28 bg-gradient-to-r from-gray-300 via-gray-100 to-gray-300 border-t-4 border-b-4 border-gray-400 rounded-sm shadow-xl flex flex-col items-center justify-center overflow-hidden transition-all duration-300 ease-out" 
+                          style={{ left: `${canX}%`, transform: 'translateX(-50%)' }}>
+                         <div className="w-full h-full absolute inset-0 flex flex-col justify-center gap-2 items-center">
+                            <div className="flex gap-1 opacity-60"><ChargeCircle type="pos" size="sm" /><ChargeCircle type="pos" size="sm" /></div>
+                            <div className={`flex gap-1 transition-transform duration-500 ${charge > 5 && Math.abs(balloonPos.x - canX) < 40 ? 'translate-x-8' : ''}`}><ChargeCircle type="neg" size="sm" /><ChargeCircle type="neg" size="sm" /></div>
+                         </div>
+                     </div>
+                 )}
+                 {subStage === 'wall' && (
+                    <div className="absolute top-0 left-0 w-32 h-full bg-amber-100 border-r-4 border-amber-200 flex flex-col items-center justify-center overflow-hidden">
+                        <div className="absolute inset-0 flex flex-col justify-around p-2">
+                            {Array.from({length: 8}).map((_, r) => (
+                                <div key={r} className="flex justify-around">
+                                    {Array.from({length: 3}).map((_, c) => (
+                                        <div key={c} className="relative w-6 h-6 flex items-center justify-center">
+                                            <span className="text-red-500 font-bold text-xs absolute">+</span>
+                                            <span className={`text-blue-500 font-bold text-xs absolute transition-transform duration-500 ${charge > 5 && balloonPos.x < 30 ? 'translate-x-4 opacity-50' : ''}`}>-</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="text-amber-800/20 font-bold text-4xl rotate-90 z-10 pointer-events-none">WALL</div>
                     </div>
-                    <div className="text-amber-800/20 font-bold text-4xl rotate-90 z-10 pointer-events-none">WALL</div>
-                </div>
-             )}
+                 )}
 
-             <div className="absolute w-32 h-40 pointer-events-none z-50" style={{ left: `${subStage==='wall'&&isComplete?10:balloonPos.x}%`, top: `${subStage==='wall'&&isComplete?40:balloonPos.y}%`, transform: 'translate(-50%, -50%)' }}>
-                 <div className="w-full h-full bg-purple-500 rounded-[50%_50%_50%_50%_/_40%_40%_60%_60%] shadow-xl flex items-center justify-center relative">
-                     <div className="absolute bottom-[-8px] w-4 h-4 bg-purple-600 rounded-full"></div>
-                     <div className="flex flex-wrap justify-center gap-1 px-4 content-center h-full pb-4">
-                        {Array.from({length: charge}).map((_, i) => <ChargeCircle key={i} type="neg" size="sm" />)}
+                 <div className="absolute w-32 h-40 pointer-events-none z-50" style={{ left: `${subStage==='wall'&&isComplete?10:balloonPos.x}%`, top: `${subStage==='wall'&&isComplete?40:balloonPos.y}%`, transform: 'translate(-50%, -50%)' }}>
+                     <div className="w-full h-full bg-purple-500 rounded-[50%_50%_50%_50%_/_40%_40%_60%_60%] shadow-xl flex items-center justify-center relative">
+                         <div className="absolute bottom-[-8px] w-4 h-4 bg-purple-600 rounded-full"></div>
+                         <div className="flex flex-wrap justify-center gap-1 px-4 content-center h-full pb-4">
+                            {Array.from({length: charge}).map((_, i) => <ChargeCircle key={i} type="neg" size="sm" />)}
+                         </div>
                      </div>
                  </div>
-             </div>
-             {flying.map(f => <div key={f.id} className="absolute bottom-10 right-10 flying-electron" style={{ '--tx': '-100px', '--ty': '-200px' }}><ChargeCircle type="neg" /></div>)}
-          </div>
-          <div className="mt-4 text-center">
-             {subStage === 'charge' && charge >= 5 && <Button onClick={() => setSubStage('paper')} className="animate-bounce">Next &rarr;</Button>}
-             {subStage === 'wall' && isComplete && <Button onClick={onComplete} className="bg-green-500 text-xl px-8 py-2 mt-4">Mission Complete &rarr;</Button>}
+                 {flying.map(f => <div key={f.id} className="absolute bottom-10 right-10 flying-electron" style={{ '--tx': '-100px', '--ty': '-200px' }}><ChargeCircle type="neg" /></div>)}
+              </div>
           </div>
         </div>
       );
@@ -781,19 +796,22 @@
         const [active, setActive] = useState(null);
         const list = [{id:1,i:'🌩️',t:'Lightning',d:'Clouds rub together -> huge charge!'}, {id:2,i:'🚪',t:'Shock',d:'Rug rubbing steals electrons from you.'}, {id:3,i:'👖',t:'Dryer',d:'Clothes rubbing makes them stick.'}, {id:4,i:'🖨️',t:'Copier',d:'Static holds toner to paper.'}];
         return (
-            <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-4 animate-fadeIn">
-                <h2 className="text-2xl font-bold mb-4 text-purple-600">Mission 6: Real World</h2>
-                <Sparkle message="Where do we see static electricity in the real world?" speak={settings.speak} />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+            <div className="flex flex-col md:flex-row items-center justify-center w-full h-full max-w-7xl mx-auto p-4 gap-8">
+                <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left space-y-4 max-w-sm">
+                    <h2 className="text-2xl font-bold text-purple-600">Mission 6: Real World</h2>
+                    <Sparkle message="Where do we see static electricity in the real world?" speak={settings.speak} />
+                    {active && <div className="mt-8"><Button onClick={onComplete} className="bg-purple-600 px-8 py-3">Take Quiz &rarr;</Button></div>}
+                </div>
+                
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                     {list.map(ex => (
-                        <div key={ex.id} onClick={() => { setActive(ex.id); if(settings.sound) playSound('pop'); }} className={`p-6 rounded-xl border-4 cursor-pointer hover:scale-105 bg-white ${active===ex.id?'ring-4 ring-purple-400':''}`}>
-                            <div className="text-5xl text-center">{ex.i}</div>
-                            <h3 className="text-xl font-bold text-center">{ex.t}</h3>
-                            {active===ex.id && <p className="text-gray-700 text-center mt-2 animate-fadeIn">{ex.d}</p>}
+                        <div key={ex.id} onClick={() => { setActive(ex.id); if(settings.sound) playSound('pop'); }} className={`p-4 md:p-6 rounded-xl border-4 cursor-pointer hover:scale-105 bg-white ${active===ex.id?'ring-4 ring-purple-400':''}`}>
+                            <div className="text-4xl md:text-5xl text-center">{ex.i}</div>
+                            <h3 className="text-lg md:text-xl font-bold text-center">{ex.t}</h3>
+                            {active===ex.id && <p className="text-gray-700 text-center mt-2 animate-fadeIn text-sm md:text-base">{ex.d}</p>}
                         </div>
                     ))}
                 </div>
-                {active && <div className="mt-8"><Button onClick={onComplete} className="bg-purple-600 px-8 py-3">Take Quiz &rarr;</Button></div>}
             </div>
         )
     };
@@ -847,23 +865,26 @@
         const next = () => { setFeed(false); if(q<qs.length-1) setQ(q+1); else onComplete(score); };
 
         return (
-            <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-4 animate-fadeIn">
-                <h2 className="text-2xl font-bold mb-4 text-purple-600">Final Quiz</h2>
-                <Sparkle 
-                    message={feed ? (ok ? "Correct! " : "Oops! ") + qs[q].r : qs[q].q} 
-                    emotion={feed ? (ok ? 'excited' : 'shocked') : 'happy'}
-                    speak={settings.speak} 
-                />
-                <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-2xl border-2 border-purple-100 text-center">
+            <div className="flex flex-col md:flex-row items-center justify-center w-full h-full max-w-6xl mx-auto p-4 gap-8">
+                <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left space-y-4 max-w-sm">
+                    <h2 className="text-2xl font-bold text-purple-600">Final Quiz</h2>
+                    <Sparkle 
+                        message={feed ? (ok ? "Correct! " : "Oops! ") + qs[q].r : qs[q].q} 
+                        emotion={feed ? (ok ? 'excited' : 'shocked') : 'happy'}
+                        speak={settings.speak} 
+                    />
+                </div>
+
+                <div className="flex-1 bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl border-2 border-purple-100 text-center">
                     <div className="text-gray-500 font-bold mb-2">Question {q+1} of {qs.length}</div>
-                    <h3 className="text-2xl font-bold mb-6">{qs[q].q}</h3>
+                    <h3 className="text-xl md:text-2xl font-bold mb-6">{qs[q].q}</h3>
                     {!feed ? (
-                        <div className="space-y-4">{qs[q].o.map((o,i)=><button key={i} onClick={()=>ans(i)} className="w-full p-4 rounded-lg bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 font-bold text-lg text-left">{o}</button>)}</div>
+                        <div className="space-y-3">{qs[q].o.map((o,i)=><button key={i} onClick={()=>ans(i)} className="w-full p-4 rounded-lg bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 font-bold text-base md:text-lg text-left">{o}</button>)}</div>
                     ) : (
                         <div className="animate-fadeIn">
                             <div className="text-6xl mb-4">{ok?'✅':'❌'}</div>
                             <h3 className="text-2xl font-bold mb-2">{ok ? 'Correct!' : 'Oops, not quite!'}</h3>
-                            <p className="text-gray-600 mb-6 text-lg px-4">{qs[q].r}</p>
+                            <p className="text-gray-600 mb-6 text-base md:text-lg px-4">{qs[q].r}</p>
                             <Button onClick={next} className="bg-purple-600">Next &rarr;</Button>
                         </div>
                     )}
@@ -875,11 +896,18 @@
     // --- STAGE 8: Lab Report (Wrap-Up Summary) ---
     const SummaryLevel = ({ onComplete, settings }) => {
         return (
-            <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-4 animate-fadeIn">
-                <h2 className="text-3xl font-bold mb-6 text-purple-800">Lab Report Summary</h2>
-                <Sparkle message="Excellent work Scientist! Here is what we discovered today." speak={settings.speak} />
+            <div className="flex flex-col md:flex-row items-center justify-center w-full h-full max-w-6xl mx-auto p-4 gap-8">
+                <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left space-y-4 max-w-sm">
+                    <h2 className="text-3xl font-bold text-purple-800">Lab Report Summary</h2>
+                    <Sparkle message="Excellent work Scientist! Here is what we discovered today." speak={settings.speak} />
+                    <div className="mt-8">
+                        <Button onClick={onComplete} className="bg-green-600 text-xl px-10 py-4 hover:bg-green-700 shadow-xl animate-bounce">
+                            Get Certificate 🎓
+                        </Button>
+                    </div>
+                </div>
                 
-                <div className="bg-white p-8 rounded-xl shadow-xl border-l-8 border-purple-500 w-full max-w-2xl space-y-6">
+                <div className="flex-1 bg-white p-8 rounded-xl shadow-xl border-l-8 border-purple-500 w-full space-y-6">
                     <div className="flex items-center gap-4">
                         <div className="text-4xl">⚛️</div>
                         <div>
@@ -904,35 +932,71 @@
                         </div>
                     </div>
                 </div>
-
-                <div className="mt-8">
-                    <Button onClick={onComplete} className="bg-green-600 text-2xl px-10 py-4 hover:bg-green-700 shadow-xl animate-bounce">
-                        Get Certificate 🎓
-                    </Button>
-                </div>
             </div>
         )
     }
 
     // --- STAGE 9: Certificate ---
     const WrapUp = ({ settings }) => {
+        const [studentName, setStudentName] = useState("");
+        const [section, setSection] = useState("");
+
         useEffect(() => { if(settings.sound) playSound('win'); }, []);
+        
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 animate-fadeIn relative overflow-hidden">
+            <div className="flex flex-col md:flex-row items-center justify-center w-full h-full p-4 animate-fadeIn relative overflow-hidden gap-8">
                  {Array.from({length: 50}).map((_,i) => <div key={i} className="confetti" style={{left: `${Math.random()*100}%`, animationDuration: `${2+Math.random()*3}s`, backgroundColor: ['#f00','#0f0','#00f','#ff0'][Math.floor(Math.random()*4)]}}></div>)}
-                <div className="text-8xl mb-6 animate-bounce">🎓</div>
-                <h1 className="text-4xl md:text-6xl font-bold text-purple-800 mb-4 font-comic">Congratulations!</h1>
-                <h2 className="text-2xl md:text-3xl font-bold text-green-600 mb-8">You are a Certified Sparkle Scientist!</h2>
-                <div className="bg-white p-10 rounded-xl shadow-2xl border-8 border-yellow-400 max-w-xl rotate-1 transform hover:rotate-0 transition-transform">
-                    <p className="text-xl mb-4">LaSallian Scientist Certification</p>
-                    <div className="border-b-4 border-black w-full h-8 mb-4"></div>
-                    <p className="text-lg text-gray-600">Awarded for mastering the secrets of Static Electricity.</p>
-                    <div className="flex justify-between items-end mt-12">
-                         <div className="text-center"><div className="font-script text-2xl text-purple-600 font-cursive">Sparkle</div><div className="border-t border-gray-400 text-sm">Lab Director</div></div>
-                         <div className="text-4xl">⚡</div>
+                
+                <div className="flex-1 flex flex-col items-center text-center max-w-sm z-10">
+                    <div className="text-8xl mb-4 animate-bounce">🎓</div>
+                    <h1 className="text-4xl md:text-5xl font-bold text-purple-800 mb-4 font-comic">Congratulations!</h1>
+                    <h2 className="text-xl md:text-2xl font-bold text-green-600 mb-8">You are a Certified Sparkle Scientist!</h2>
+                    
+                    <div className="w-full bg-white/50 p-4 rounded-lg border border-purple-200 shadow-sm space-y-3">
+                        <input 
+                            type="text" 
+                            placeholder="Enter Your Name" 
+                            className="w-full p-2 rounded border border-gray-300"
+                            value={studentName}
+                            onChange={(e) => setStudentName(e.target.value)}
+                        />
+                        <input 
+                            type="text" 
+                            placeholder="Enter Section/Grade" 
+                            className="w-full p-2 rounded border border-gray-300"
+                            value={section}
+                            onChange={(e) => setSection(e.target.value)}
+                        />
+                    </div>
+                    <div className="mt-6"><Button onClick={() => window.location.reload()} className="bg-gray-500 hover:bg-gray-600">Restart Lab</Button></div>
+                </div>
+
+                <div className="flex-1 bg-white p-8 md:p-10 rounded-xl shadow-2xl border-8 border-yellow-400 max-w-2xl w-full rotate-1 transform hover:rotate-0 transition-transform relative z-10">
+                    <div className="absolute top-4 right-4 text-4xl opacity-20">⚡</div>
+                    <div className="absolute bottom-4 left-4 text-4xl opacity-20">⚛️</div>
+                    
+                    <h2 className="text-3xl font-bold text-center text-purple-800 mb-2 font-serif">Certificate of Achievement</h2>
+                    <p className="text-center text-gray-500 mb-8">LaSallian Scientist Certification</p>
+                    
+                    <p className="text-center text-lg mb-2">This certifies that</p>
+                    <div className="text-center text-3xl font-bold text-blue-700 border-b-2 border-gray-300 pb-2 mb-2 font-comic min-h-[40px]">
+                        {studentName || "Future Scientist"}
+                    </div>
+                    <div className="text-center text-gray-500 text-sm mb-6">{section || "Grade 5 Science"}</div>
+                    
+                    <p className="text-center text-lg text-gray-700 mb-8">Has successfully mastered the secrets of Atoms, Charges, and Static Electricity.</p>
+                    
+                    <div className="flex justify-between items-end mt-12 px-8">
+                         <div className="text-center">
+                             <div className="font-script text-2xl text-purple-600 font-cursive mb-1">Sparkle</div>
+                             <div className="border-t border-gray-400 text-sm w-32 mx-auto pt-1">Lab Director</div>
+                         </div>
+                         <div className="text-center">
+                             <div className="text-sm font-bold text-gray-600 mb-1">{new Date().toLocaleDateString()}</div>
+                             <div className="border-t border-gray-400 text-sm w-32 mx-auto pt-1">Date</div>
+                         </div>
                     </div>
                 </div>
-                <div className="mt-12"><Button onClick={() => window.location.reload()} className="bg-gray-500 hover:bg-gray-600">Restart Lab</Button></div>
             </div>
         )
     };
@@ -964,7 +1028,7 @@
         const labels = ['Intro', 'Atoms', 'Shells', 'Forces', 'Comb', 'Balloon', 'Real Life', 'Quiz', 'Summary', 'Done'];
 
         return (
-            <div className="min-h-screen pb-10">
+            <div className="h-screen w-screen flex flex-col overflow-hidden bg-[#f0f9ff]">
                {showInfo && (
                    <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 animate-fadeIn">
                        <div className="bg-white rounded-xl p-6 max-w-sm w-full text-center shadow-2xl relative border-4 border-purple-200">
@@ -977,7 +1041,7 @@
                    </div>
                )}
 
-               <div className="bg-white shadow-sm p-4 sticky top-0 z-40 flex justify-between items-center mb-4">
+               <div className="bg-white shadow-sm p-3 z-40 flex justify-between items-center shrink-0">
                    <h1 className="text-xl md:text-2xl font-bold text-purple-600 flex items-center gap-2"><span className="text-3xl">⚡</span> Sparkle's Static Lab</h1>
                    <div className="flex gap-2">
                        <button onClick={() => setShowInfo(true)} className="p-2 rounded-full bg-yellow-100 text-yellow-600">ℹ️</button>
@@ -988,19 +1052,19 @@
                </div>
 
                {stage > 0 && stage < 9 && (
-                   <div className="w-full max-w-4xl mx-auto px-4 mb-6">
-                       <div className="flex justify-between mb-2">
+                   <div className="w-full max-w-4xl mx-auto px-4 mb-2 shrink-0">
+                       <div className="flex justify-between mb-1 overflow-hidden">
                            {labels.slice(1, -1).map((label, idx) => (
-                               <div key={idx} className={`text-[10px] md:text-xs font-bold ${stage >= idx + 1 ? 'text-purple-600' : 'text-gray-300'}`}>{label}</div>
+                               <div key={idx} className={`text-[10px] whitespace-nowrap ${stage >= idx + 1 ? 'text-purple-600 font-bold' : 'text-gray-300'}`}>{label}</div>
                            ))}
                        </div>
-                       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                       <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                            <div className="h-full bg-purple-500 transition-all duration-500" style={{ width: `${((stage - 1) / 7) * 100}%` }}></div>
                        </div>
                    </div>
                )}
 
-               <main className="container mx-auto">
+               <main className="flex-1 overflow-hidden relative">
                    {stage === 0 && <IntroScreen onComplete={startApp} settings={settings} />}
                    {stage === 1 && <AtomBuilder onComplete={nextStage} settings={settings} />}
                    {stage === 2 && <ElectronShellLevel onComplete={nextStage} settings={settings} />}
